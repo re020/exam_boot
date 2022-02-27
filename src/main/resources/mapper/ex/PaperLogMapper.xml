@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ex.mapper.PaperLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ex.pojo.PaperLogDO">
+        <id column="pl_id" property="plId"/>
+        <result column="pl_teacher" property="plTeacher"/>
+        <result column="pl_title" property="plTitle"/>
+        <result column="pl_college" property="plCollege"/>
+        <result column="pl_difficulty" property="plDifficulty"/>
+        <result column="pl_score" property="plScore"/>
+        <result column="pl_time" property="plTime"/>
+        <result column="pl_version" property="plVersion"/>
+        <result column="pl_delete" property="plDelete"/>
+        <association property="teacher" resultMap="com.exam.ex.mapper.TeacherMapper.BaseResultMap"></association>
+        <association property="college" resultMap="com.exam.ex.mapper.DictMapper.BaseResultMap"></association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        pl_id, pl_teacher, pl_title, pl_college, pl_difficulty, pl_score, pl_time, pl_version, pl_delete
+    </sql>
+
+    <select id="getListByPage" parameterType="com.exam.core.pojo.Page" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"></include>
+        ,teacher_id, teacher_name
+        ,dict_id, dict_name
+        from ex_paper_log
+        inner join ex_teacher as teacher on teacher_id = pl_teacher
+        inner join ex_dict as college on pl_college = dict_id
+        where pl_delete = 1
+        <if test="params.teacherName!=null and params.teacherName!=''">
+            and teacher_name like '%${params.teacherName}%'
+        </if>
+        <if test="params.paperTitle!=null and params.paperTitle!=''">
+            and pl_title like '%${params.paperTitle}%'
+        </if>
+        <if test="params.collegeId!=null and params.collegeId!=''">
+            and pl_college = #{params.collegeId}
+        </if>
+        <if test="params.orgCollege!=null and params.orgCollege!=''">
+            and pl_college = #{params.orgCollege}
+        </if>
+        <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+            and pl_teacher = #{params.orgTeacher}
+        </if>
+
+        <if test="sortName == null or sortName == ''">
+            order by pl_time desc
+        </if>
+        <if test="sortName != null and sortName != ''">
+            order by ${sortName} ${sortOrder}
+        </if>
+        limit #{index}, #{currentCount}
+    </select>
+
+    <select id="getCountByPage" parameterType="com.exam.core.pojo.Page" resultType="java.lang.Integer">
+        select
+        count(pl_id)
+        from ex_paper_log
+        inner join ex_teacher on teacher_id = pl_teacher
+        inner join ex_dict on pl_college = dict_id
+        where pl_delete = 1
+        <if test="params.teacherName!=null and params.teacherName!=''">
+            and teacher_name like '%${params.teacherName}%'
+        </if>
+        <if test="params.paperTitle!=null and params.paperTitle!=''">
+            and pl_title like '%${params.paperTitle}%'
+        </if>
+        <if test="params.collegeId!=null and params.collegeId!=''">
+            and pl_college = #{params.collegeId}
+        </if>
+        <if test="params.orgCollege!=null and params.orgCollege!=''">
+            and pl_college = #{params.orgCollege}
+        </if>
+        <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+            and pl_teacher = #{params.orgTeacher}
+        </if>
+    </select>
+
+</mapper>

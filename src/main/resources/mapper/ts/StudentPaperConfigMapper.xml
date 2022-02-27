@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.StudentPaperConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.StudentPaperConfigDO">
+        <id column="config_id" property="configId" />
+        <result column="config_paper" property="configPaper" />
+        <result column="config_question_num" property="configQuestionNum" />
+        <result column="config_score" property="configScore" />
+        <result column="config_type" property="configType" />
+        <result column="config_know" property="configKnow" />
+        <result column="config_version" property="configVersion" />
+        <result column="config_delete" property="configDelete" />
+        <association property="type" javaType="com.exam.ex.pojo.TypeDO">
+            <id column="type_id" property="typeId"/>
+            <result column="type_name" property="typeName"/>
+        </association>
+        <collection property="questionList" resultMap="com.exam.ts.mapper.StudentPaperConfigQuestionMapper.BaseResultMap">
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        config_id, config_paper, config_question_num, config_score, config_type, config_know, config_version, config_delete
+    </sql>
+
+    <insert id="saveBatch" parameterType="com.exam.ts.pojo.StudentPaperConfigDO">
+        insert into te_student_paper_config (
+        config_id, config_paper, config_question_num, config_score, config_type
+        ) values
+        <foreach collection="list" item="config" separator=",">
+            (#{config.configId}, #{config.configPaper}, #{config.configQuestionNum}, #{config.configScore},
+            #{config.configType})
+        </foreach>
+    </insert>
+
+    <select id="getByPaperAndQuestion" resultMap="BaseResultMap">
+        select * from
+        te_student_paper_config
+        inner join te_student_paper_config_question on config_id = question_config
+        where config_paper = #{paperId}
+        and question_id = #{questionId}
+    </select>
+
+    <select id="getQuestionNum" parameterType="string" resultMap="BaseResultMap">
+           SELECT
+            te_student_paper_config.config_id,
+            config_paper,
+            count( question_id ) AS config_question_num,
+            score AS config_score,
+            config_type,
+            type_name
+        FROM
+            te_student_paper_config
+            INNER JOIN te_student_paper_config_question ON config_id = question_config
+            LEFT JOIN ex_type ON type_id = config_type
+            INNER JOIN ( SELECT config_id, sum( config_score ) AS score FROM te_student_paper_config WHERE config_paper = #{value} GROUP BY config_type ) temp ON te_student_paper_config.config_id = temp.config_id
+        WHERE
+            config_paper = #{value}
+        GROUP BY
+            config_type
+    </select>
+</mapper>

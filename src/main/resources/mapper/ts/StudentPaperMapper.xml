@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.StudentPaperMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.StudentPaperDO">
+        <id column="paper_id" property="paperId" />
+        <result column="paper_title" property="paperTitle" />
+        <result column="paper_exam" property="paperExam" />
+        <result column="paper_start_year" property="paperStartYear" />
+        <result column="paper_end_year" property="paperEndYear" />
+        <result column="paper_seme" property="paperSeme" />
+        <result column="paper_college" property="paperCollege" />
+        <result column="paper_bank" property="paperBank" />
+        <result column="paper_flag" property="paperFlag" />
+        <result column="paper_difficulty" property="paperDifficulty" />
+        <result column="paper_score" property="paperScore" />
+        <result column="paper_student_score" property="paperStudentScore" />
+        <result column="paper_student" property="paperStudent" />
+        <result column="paper_question_num" property="paperQuestionNum" />
+        <result column="paper_create_time" property="paperCreateTime" />
+        <result column="paper_version" property="paperVersion" />
+        <result column="paper_delete" property="paperDelete" />
+        <association property="bank" javaType="com.exam.ex.pojo.BankDO">
+            <id column="bank_id" property="bankId"/>
+            <result column="bank_name" property="bankName"/>
+        </association>
+        <association property="exam" resultMap="com.exam.ts.mapper.ExamMapper.BaseResultMap"/>
+        <association property="student" resultMap="com.exam.ex.mapper.StudentMapper.BaseResultMap"/>
+
+        <collection property="configList" resultMap="com.exam.ts.mapper.StudentPaperConfigMapper.BaseResultMap">
+        </collection>
+    </resultMap>
+
+    <resultMap id="queryMap" type="com.exam.ts.pojo.DTO.StudentPaperDTO">
+        <id column="paper_id" property="paperId" />
+        <result column="paper_title" property="paperTitle" />
+        <result column="paper_score" property="paperScore" />
+        <result column="stu_name" property="stuName"/>
+        <result column="paper_student" property="paperStudent" />
+        <result column="paper_flag" property="paperFlag" />
+        <result column="paper_difficulty" property="paperDifficulty" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        paper_id, paper_title, paper_exam, paper_start_year, paper_end_year, paper_seme, paper_college, paper_bank, paper_flag, paper_difficulty, paper_score, paper_student_score, paper_student, paper_question_num, paper_create_time, paper_version, paper_delete
+    </sql>
+
+
+    <select id="selectStuByexamId" resultType="string">
+        select paper_student from te_student_paper WHERE paper_exam = #{examId};
+    </select>
+
+    <select id="getQuestion" resultMap="BaseResultMap">
+        SELECT
+       <include refid="Base_Column_List"/>
+        ,bank_id,bank_name
+        ,config_id,config_paper,config_question_num,config_score,config_type
+        ,type_name
+        ,question_id
+        FROM te_student_paper p
+        INNER JOIN ex_bank  on paper_bank = bank_id
+        INNER JOIN te_student_paper_config  on config_paper = paper_id
+        inner join te_student_paper_config_question on question_config = config_id
+        INNER JOIN ex_type on type_id = config_type
+        WHERE p.paper_exam = #{examId} and p.paper_student = #{stuId};
+
+    </select>
+
+    <select id="getQuestionById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,bank_id,bank_name
+        ,config_id
+        ,config_paper
+        ,config_question_num
+        ,config_score
+        ,config_type
+        ,type_name
+        ,question_id
+        FROM te_student_paper
+        INNER JOIN ex_bank  on paper_bank = bank_id
+        INNER JOIN te_student_paper_config  on config_paper = paper_id
+        inner join te_student_paper_config_question on question_config = config_id
+        INNER JOIN ex_type on type_id = config_type
+        WHERE paper_id = #{value}
+
+    </select>
+
+    <select id="countOfPaper" resultType="com.exam.ts.pojo.PO.LogPO">
+        SELECT count(*) as 'stuNum'
+        ,sum(case when paper_student_score >= (paper_score * 0.6) then 1 else 0 end) / count(*) as 'pass'
+        FROM te_student_paper
+        WHERE paper_exam = #{value}
+    </select>
+
+
+    <select id="getListByPage" parameterType="com.exam.core.pojo.Page" resultMap="queryMap">
+        select
+         paper_id
+        ,paper_title
+        ,paper_flag
+        ,paper_score
+        ,paper_student
+        ,stu_name
+        ,paper_flag
+        ,paper_difficulty
+        from te_student_paper
+        inner join ex_dict college on college.dict_id = paper_college
+        inner join ex_student on stu_id = paper_student
+        <where>
+            paper_delete = 1
+            <if test="params.paperTitle!=null and params.paperTitle!=''">
+                and paper_title like '%${params.paperTitle}%'
+            </if>
+            <if test="params.paperExam!=null and params.paperExam!=''">
+                and paper_exam = #{params.paperExam}
+            </if>
+            <if test="params.orgCollege!=null and params.orgCollege!=''">
+                and paper_college = #{params.orgCollege}
+            </if>
+            <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+                and paper_create_by = #{params.orgTeacher}
+            </if>
+            <if test="params.paperFlag!=null and params.paperFlag!=''">
+                and paper_flag = #{params.paperFlag}
+            </if>
+            <if test="params.paperDifficulty!=null and params.paperDifficulty!=''">
+                and paper_difficulty = #{params.paperDifficulty}
+            </if>
+        </where>
+        <if test="sortName != null and sortName != ''">
+            order by ${sortName} ${sortOrder}
+        </if>
+        limit #{index}, #{currentCount}
+    </select>
+
+    <select id="getCountByPage" parameterType="com.exam.core.pojo.Page" resultType="java.lang.Integer">
+        select
+        count(paper_id)
+        from te_student_paper
+        inner join ex_dict college on college.dict_id = paper_college
+        inner join ex_bank on bank_id = paper_bank
+        <where>
+            paper_delete = 1
+            <if test="params.paperTitle!=null and params.paperTitle!=''">
+                and paper_title like '%${params.paperTitle}%'
+            </if>
+            <if test="params.paperExam!=null and params.paperExam!=''">
+                and paper_exam = #{params.paperExam}
+            </if>
+            <if test="params.orgCollege!=null and params.orgCollege!=''">
+                and paper_college = #{params.orgCollege}
+            </if>
+            <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+                and paper_create_by = #{params.orgTeacher}
+            </if>
+            <if test="params.paperFlag!=null and params.paperFlag!=''">
+                and paper_flag = #{params.paperFlag}
+            </if>
+            <if test="params.paperDifficulty!=null and params.paperDifficulty!=''">
+                and paper_difficulty = #{params.paperDifficulty}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPaperById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,stu_id, stu_number, stu_name, stu_sex, stu_age, stu_college, stu_major, stu_img, stu_card, stu_entrance_time
+        ,exam_id, exam_date, exam_room, exam_time, exam_create_by, exam_create_time, exam_type, exam_state, exam_comment
+        FROM
+        te_exam
+        INNER JOIN te_student_paper ON te_exam.exam_id = te_student_paper.paper_exam
+        INNER JOIN ex_student ON te_student_paper.paper_student = ex_student.stu_id
+        WHERE
+        te_exam.exam_id = #{examId}
+
+    </select>
+</mapper>

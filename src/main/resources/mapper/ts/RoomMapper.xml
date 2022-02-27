@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.RoomMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.RoomDO">
+        <id column="room_id" property="roomId" />
+        <result column="room_name" property="roomName" />
+        <result column="room_building" property="roomBuilding" />
+        <result column="room_state" property="roomState" />
+        <result column="room_comment" property="roomComment" />
+        <result column="room_version" property="roomVersion" />
+        <result column="room_delete" property="roomDelete" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        room_id, room_name, room_building, room_state, room_comment, room_version, room_delete
+    </sql>
+
+    <select id="getListByPage" parameterType="com.exam.core.pojo.Page" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from te_room
+        <where>
+            room_delete = 1
+            <if test="params.roomName!=null and params.roomName!=''">
+                and room_name like '%${params.roomName}%'
+            </if>
+            <if test="params.roomState!=null and params.roomState!=''">
+                and room_state = #{params.roomState}
+            </if>
+            <if test="params.roomBuilding!=null and params.roomBuilding!=''">
+                and room_building = #{params.roomBuilding}
+            </if>
+        </where>
+        <if test="sortName!=null and sortName!=''">
+            order by ${sortName} ${sortOrder}
+        </if>
+        <if test="sortName == null or sortName == ''">
+            order by room_state asc
+        </if>
+        limit #{index}, #{currentCount}
+    </select>
+
+    <select id="getCountByPage" parameterType="com.exam.core.pojo.Page" resultType="java.lang.Integer">
+        select
+        count(room_id)
+        from te_room
+        <where>
+            room_delete = 1
+            <if test="params.roomName!=null and params.roomName!=''">
+                and room_name like '%${params.roomName}%'
+            </if>
+            <if test="params.roomState!=null and params.roomState!=''">
+                and room_state = #{params.roomState}
+            </if>
+            <if test="params.roomBuilding!=null and params.roomBuilding!=''">
+                and room_building = #{params.roomBuilding}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.ExamTeacherMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.ExamTeacherDO">
+        <id column="tt_id" property="ttId"/>
+        <result column="tt_exam" property="ttExam"/>
+        <result column="tt_teacher" property="ttTeacher"/>
+        <association property="teacher" resultMap="com.exam.ex.mapper.TeacherMapper.BaseResultMap"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        tt_id, tt_exam, tt_teacher
+    </sql>
+
+    <select id="getNotEndTeacher" resultMap="BaseResultMap">
+        select tt_id from te_exam_teacher
+        inner join te_exam
+        where exam_id = tt_exam
+        and exam_state != 2
+        and tt_teacher = #{value}
+    </select>
+
+    <select id="getByExamId" resultMap="BaseResultMap">
+        select
+        tt_id, tt_exam,
+        <include refid="com.exam.ex.mapper.TeacherMapper.Base_Column_List"></include>
+        from ex_teacher
+        inner join te_exam_teacher on tt_teacher = teacher_id
+        inner join te_exam on exam_id = tt_exam
+        where exam_id = #{value}
+    </select>
+
+</mapper>

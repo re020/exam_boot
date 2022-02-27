@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.StudentPaperConfigScoreMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.StudentPaperConfigScoreDO">
+        <id column="sc_id" property="scId"/>
+        <result column="sc_paper" property="scPaper"/>
+        <result column="sc_config" property="scConfig"/>
+        <result column="sc_score" property="scScore"/>
+        <result column="sc_student" property="scStudent"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        sc_id, sc_paper, sc_config, sc_score, sc_student
+    </sql>
+
+    <select id="getGradesByPaperAndStu" resultType="decimal">
+        SELECT
+        sum(sc_score)
+        from te_student_paper_config_score
+        where sc_paper = #{paperId}
+            and sc_student = #{stuId}
+    </select>
+    
+    <select id="getScoresByIds" resultType="decimal">
+        select SUM(sc_score)
+        from te_student_paper_config_score
+        WHERE sc_config in
+        <foreach collection="configIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and sc_paper = #{paperId}
+    </select>
+
+</mapper>

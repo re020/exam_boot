@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.ExamMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.ExamDO">
+        <id column="exam_id" property="examId"/>
+        <result column="exam_date" property="examDate"/>
+        <result column="exam_room" property="examRoom"/>
+        <result column="exam_time" property="examTime"/>
+        <result column="exam_paper" property="examPaper"/>
+        <result column="exam_create_by" property="examCreateBy"/>
+        <result column="exam_create_time" property="examCreateTime"/>
+        <result column="exam_type" property="examType"/>
+        <result column="exam_state" property="examState"/>
+        <result column="exam_comment" property="examComment"/>
+        <result column="exam_version" property="examVersion"/>
+        <result column="exam_delete" property="examDelete"/>
+        <association property="paper" resultMap="com.exam.ex.mapper.PaperMapper.BaseResultMap"/>
+        <association property="room" resultMap="com.exam.ts.mapper.RoomMapper.BaseResultMap"/>
+        <association property="teacher" resultMap="com.exam.ex.mapper.TeacherMapper.BaseResultMap"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        exam_id, exam_date, exam_room, exam_time, exam_paper, exam_create_by, exam_create_time, exam_type, exam_state, exam_comment, exam_version, exam_delete
+    </sql>
+
+    <select id="getListByPage" parameterType="com.exam.core.pojo.Page" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"></include>
+        ,paper_id, paper_title, paper_bank
+        ,room_id, room_name
+        ,teacher_id, teacher_name
+        from te_exam
+        inner join ex_paper paper on exam_paper = paper_id
+        inner join te_room on exam_room = room_id
+        inner join ex_teacher on exam_create_by = teacher_id
+        <where>
+            exam_delete = 1
+            <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+                and exam_create_by = #{params.orgTeacher}
+            </if>
+            <if test="params.orgCollege!=null and params.orgCollege!=''">
+                and paper_college = #{params.orgCollege}
+            </if>
+            <if test="params.examCreateBy!=null and params.examCreateBy!=''">
+                and teacher_name like '%${params.examCreateBy}%'
+            </if>
+            <if test="params.startTime!='' and params.startTime!=null and params.endTime != '' and params.endTime != null">
+                and exam_date <![CDATA[ >= ]]> #{params.startTime}
+                and exam_date <![CDATA[ <= ]]> #{params.endTime}
+            </if>
+            <if test="params.examRoom!=null and params.examRoom!=''">
+                and room_name like '%${params.examRoom}%'
+            </if>
+            <if test="params.examType!=null and params.examType!=''">
+                and exam_type = #{params.examType}
+            </if>
+            <if test="params.examState!=null and params.examState!=''">
+                and exam_state = #{params.examState}
+            </if>
+        </where>
+        <if test="sortName == null or sortName == ''">
+            order by exam_create_time desc
+        </if>
+        <if test="sortName != null and sortName != ''">
+            order by ${sortName} ${sortOrder}
+        </if>
+        limit #{index}, #{currentCount}
+    </select>
+
+    <select id="getCountByPage" parameterType="com.exam.core.pojo.Page" resultType="java.lang.Integer">
+        select
+        count(exam_id)
+        from te_exam
+        inner join ex_paper paper on exam_paper = paper_id
+        inner join te_room on exam_room = room_id
+        inner join ex_teacher on exam_create_by = teacher_id
+        <where>
+            exam_delete = 1
+            <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+                and exam_create_by = #{params.orgTeacher}
+            </if>
+            <if test="params.orgCollege!=null and params.orgCollege!=''">
+                and paper_college = #{params.orgCollege}
+            </if>
+            <if test="params.examCreateBy!=null and params.examCreateBy!=''">
+                and teacher_name like '%${params.examCreateBy}%'
+            </if>
+            <if test="params.startTime!='' and params.startTime!=null and params.endTime != '' and params.endTime != null">
+                and exam_date <![CDATA[ >= ]]> #{params.startTime}
+                and exam_date <![CDATA[ <= ]]> #{params.endTime}
+            </if>
+            <if test="params.examRoom!=null and params.examRoom!=''">
+                and room_name like '%${params.examRoom}%'
+            </if>
+            <if test="params.examType!=null and params.examType!=''">
+                and exam_type = #{params.examType}
+            </if>
+            <if test="params.examState!=null and params.examState!=''">
+                and exam_state = #{params.examState}
+            </if>
+        </where>
+    </select>
+
+    <select id="getListByStu" parameterType="com.exam.core.pojo.Page" resultMap="BaseResultMap">
+        SELECT
+		  <include refid="Base_Column_List"/>
+        ,paper_id, paper_title
+        from te_exam
+        INNER JOIN te_exam_student es on exam_id = st_exam
+        INNER JOIN ex_paper on  exam_paper = paper_id
+        <where>
+            exam_delete = 1
+            <if test="params.stuId!=null and params.stuId!=''">
+                and es.st_stu = #{params.stuId}
+            </if>
+            <if test="params.orgTeacher!=null and params.orgTeacher!=''">
+                and exam_create_by = #{params.orgTeacher}
+            </if>
+            <if test="params.orgCollege!=null and params.orgCollege!=''">
+                and paper_college = #{params.orgCollege}
+            </if>
+            <if test="params.examCreateBy!=null and params.examCreateBy!=''">
+                and teacher_name like '%${params.examCreateBy}%'
+            </if>
+            <if test="params.startTime!='' and params.startTime!=null and params.endTime != '' and params.endTime != null">
+                and exam_date <![CDATA[ >= ]]> #{params.startTime}
+                and exam_date <![CDATA[ <= ]]> #{params.endTime}
+            </if>
+            <if test="params.examRoom!=null and params.examRoom!=''">
+                and room_name like '%${params.examRoom}%'
+            </if>
+            <if test="params.examType!=null and params.examType!=''">
+                and exam_type = #{params.examType}
+            </if>
+            <if test="params.examState!=null and params.examState!=''">
+                and exam_state = #{params.examState}
+            </if>
+        </where>
+        <if test="sortName == null or sortName == ''">
+            order by exam_create_time desc
+        </if>
+        <if test="sortName != null and sortName != ''">
+            order by ${sortName} ${sortOrder}
+        </if>
+        limit #{index}, #{currentCount}
+    </select>
+
+</mapper>

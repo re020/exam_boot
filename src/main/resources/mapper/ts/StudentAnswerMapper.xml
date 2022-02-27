@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.StudentAnswerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.StudentAnswerDO">
+        <id column="answer_id" property="answerId" />
+        <result column="answer_content" property="answerContent" />
+        <result column="answer_student" property="answerStudent" />
+        <result column="answer_conf" property="answerConf" />
+        <result column="answer_paper" property="answerPaper" />
+        <result column="answer_question" property="answerQuestion"/>
+        <result column="config_type" property="type" javaType="Integer"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        answer_id, answer_content, answer_student, answer_conf, answer_paper,answer_question
+    </sql>
+
+    <select id="selectcofigList" parameterType="com.exam.ts.pojo.StudentAnswerDO" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,config_type
+        FROM te_student_answer
+        LEFT JOIN te_student_paper_config on config_id = answer_conf
+        WHERE answer_student = #{answerStudent} and answer_paper = #{answerPaper}
+
+    </select>
+</mapper>

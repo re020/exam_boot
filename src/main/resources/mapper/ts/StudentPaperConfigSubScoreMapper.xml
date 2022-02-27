@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.ts.mapper.StudentPaperConfigSubScoreMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.exam.ts.pojo.StudentPaperConfigSubScoreDO">
+        <id column="qs_id" property="qsId" />
+        <result column="qs_question" property="qsQuestion" />
+        <result column="qs_config" property="qsConfig" />
+        <result column="qs_student" property="qsStudent" />
+        <result column="qs_score" property="qsScore" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        qs_id, qs_question, qs_config, qs_student, qs_score
+    </sql>
+
+</mapper>
