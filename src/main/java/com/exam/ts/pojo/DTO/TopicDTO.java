@@ -7,12 +7,6 @@ import com.exam.ex.pojo.QuestionDO;
 import com.exam.ex.pojo.TrueFalseDO;
 import lombok.Data;
 
-/**
- *  题目信息及答案
- * @author lth
- * @version 1.0.0
- * @date
- */
 
 @Data
 public class TopicDTO {

@@ -6,12 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-/**
- *  学生考试返回
- * @author lth
- * @version 1.0.0
- * @date
- */
+
 
 @Data
 public class ExamDTO implements Serializable {

@@ -4,10 +4,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-/**
- * @author lth
- * @date 2020年05月04日 20:15
- */
 
 @Data
 public class StudentPaperDTO {
